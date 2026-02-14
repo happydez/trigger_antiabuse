@@ -9,6 +9,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <shavit/core>
+#include <shavit/checkpoints>
 
 #define DEBUG 0
 
@@ -191,7 +192,7 @@ Action OnTriggerStartTouch(int entity, int other)
         #if DEBUG
             char classname[32];
             GetEntityClassname(entity, classname, sizeof(classname));
-            PrintToChat(other, "[TAA] Blocked %s (teleport grace: %d/%d ticks)", classname, ticksSinceTeleport, graceTicks);
+            PrintToChat(other, "[trigger-antiabuse] Blocked %s (teleport grace: %d/%d ticks)", classname, ticksSinceTeleport, graceTicks);
         #endif
 
         return Plugin_Handled;
@@ -206,6 +207,18 @@ public void Shavit_OnStart_Post(int client, int track)
 }
 
 public void Shavit_OnRestart_Post(int client, int track)
+{
+    gI_LastTeleportTick[client] = GetGameTickCount();
+}
+
+public Action Shavit_OnTeleport(int client, int index, int target)
+{
+    gI_LastTeleportTick[client] = GetGameTickCount();
+    
+    return Plugin_Continue;
+}
+
+public void Shavit_OnCheckpointCacheLoaded(int client, cp_cache_t cache, int index)
 {
     gI_LastTeleportTick[client] = GetGameTickCount();
 }
